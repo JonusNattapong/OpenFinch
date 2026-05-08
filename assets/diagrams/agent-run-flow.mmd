@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant User as User / CLI / SDK
+    participant API as API Gateway
+    participant Queue as BullMQ Agent Queue
+    participant Worker as Agent Worker
+    participant Browser as Playwright Browser
+    participant LLM as LLM Provider
+    participant Store as Postgres / Redis
+
+    User->>API: POST /v1/agent/run { goal, url }
+    API->>Queue: Enqueue agent job
+    API-->>User: { runId, status: "queued" }
+
+    User->>API: GET /v1/agent/run/{runId}
+    API-->>User: { status: "queued" }
+
+    Queue->>Worker: Dequeue job
+    Worker->>Store: Create run record
+    Worker->>API: Update status to "running"
+    API-->>User: (via poll) { status: "running" }
+
+    loop Each Step (max 20)
+        Worker->>Browser: Navigate / screenshot
+        Browser-->>Worker: Page state
+        Worker->>LLM: Analyze + plan next action
+        LLM-->>Worker: { thought, action }
+        Worker->>Store: Save agent event
+        User->>API: GET /v1/agent/run/{runId}/events
+        API-->>User: SSE stream of events
+    end
+
+    Worker->>Store: Save final result
+    Worker->>API: Update status to "succeeded"
+    API-->>User: (via poll) { status: "succeeded" }
+
+    User->>API: GET /v1/agent/run/{runId}/result
+    API-->>User: { result, steps, trace }

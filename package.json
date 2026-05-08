@@ -1,0 +1,26 @@
+{
+  "name": "openfinch",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Open-source self-hosted AI web agent infrastructure",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -F @openfinch/api dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.23.0"
+}

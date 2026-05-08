@@ -1,0 +1,242 @@
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # === API Gateway ===
+  api:
+    image: openfinch/api:0.1.0
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    ports:
+      - "${API_PORT:-8787}:8787"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://openfinch:openfinch@postgres:5432/openfinch}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio:9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-openfinch}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-openfinch-secret}
+      - MINIO_BUCKET=${MINIO_BUCKET:-openfinch-artifacts}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NODE_ENV=${NODE_ENV:-production}
+      - MAX_BROWSER_SESSIONS=${MAX_BROWSER_SESSIONS:-2}
+      - BROWSER_SESSION_TTL_SECONDS=${BROWSER_SESSION_TTL_SECONDS:-300}
+      - MAX_AGENT_STEPS=${MAX_AGENT_STEPS:-20}
+      - MAX_AGENT_RUNTIME_SECONDS=${MAX_AGENT_RUNTIME_SECONDS:-180}
+      - RESPECT_ROBOTS_TXT=${RESPECT_ROBOTS_TXT:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Dashboard ===
+  dashboard:
+    image: openfinch/dashboard:0.1.0
+    build:
+      context: ..
+      dockerfile: apps/dashboard/Dockerfile
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+    environment:
+      - API_URL=http://api:8787
+    depends_on:
+      - api
+    logging: *default-logging
+    restart: unless-stopped
+    profiles:
+      - full
+
+  # === MCP Server ===
+  mcp-server:
+    image: openfinch/mcp-server:0.1.0
+    build:
+      context: ..
+      dockerfile: services/mcp-server/Dockerfile
+    ports:
+      - "${MCP_PORT:-8788}:8788"
+    environment:
+      - API_URL=http://api:8787
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - api
+    logging: *default-logging
+    restart: unless-stopped
+    profiles:
+      - full
+      - mcp
+
+  # === Search Worker ===
+  search-worker:
+    image: openfinch/search-worker:0.1.0
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.search-worker
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      redis:
+        condition: service_healthy
+      searxng:
+        condition: service_healthy
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Fetch Worker ===
+  fetch-worker:
+    image: openfinch/fetch-worker:0.1.0
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.fetch-worker
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Browser Worker ===
+  browser-worker:
+    image: openfinch/browser-worker:0.1.0
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.browser-worker
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://openfinch:openfinch@postgres:5432/openfinch}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-minio:9000}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-openfinch}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-openfinch-secret}
+      - MINIO_BUCKET=${MINIO_BUCKET:-openfinch-artifacts}
+      - MAX_BROWSER_SESSIONS=${MAX_BROWSER_SESSIONS:-2}
+      - BROWSER_SESSION_TTL_SECONDS=${BROWSER_SESSION_TTL_SECONDS:-300}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Agent Worker ===
+  agent-worker:
+    image: openfinch/agent-worker:0.1.0
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.agent-worker
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://openfinch:openfinch@postgres:5432/openfinch}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+      - MAX_AGENT_STEPS=${MAX_AGENT_STEPS:-20}
+      - MAX_AGENT_RUNTIME_SECONDS=${MAX_AGENT_RUNTIME_SECONDS:-180}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Postgres ===
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=openfinch
+      - POSTGRES_PASSWORD=openfinch
+      - POSTGRES_DB=openfinch
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openfinch"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === Redis ===
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging: *default-logging
+    restart: unless-stopped
+
+  # === SearXNG ===
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - searxng-data:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    logging: *default-logging
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # === MinIO ===
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=openfinch
+      - MINIO_ROOT_PASSWORD=openfinch-secret
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging: *default-logging
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  searxng-data:
+  minio-data:

@@ -1,0 +1,73 @@
+graph TB
+    subgraph Users["User Interfaces"]
+        CLI["CLI<br/><i>npx openfinch</i>"]
+        SDK["SDK<br/><i>JS / Python</i>"]
+        MCP["MCP Client<br/><i>Claude Desktop</i>"]
+        DASH["Dashboard<br/><i>Web UI</i>"]
+    end
+
+    subgraph Gateway["OpenFinch API Gateway :8787"]
+        API["Hono REST API"]
+        MID["Middleware<br/><i>CORS / Logging / Rate Limit / Trace</i>"]
+    end
+
+    subgraph Queue["BullMQ Job Queue"]
+        QSEARCH["Search Queue"]
+        QFETCH["Fetch Queue"]
+        QBROWSER["Browser Queue"]
+        QAGENT["Agent Queue"]
+    end
+
+    subgraph Workers["Background Workers"]
+        WSEARCH["Search Worker"]
+        WFETCH["Fetch Worker"]
+        WBROWSER["Browser Worker<br/><i>Playwright</i>"]
+        WAGENT["Agent Worker<br/><i>LLM + Browser</i>"]
+    end
+
+    subgraph Storage["Data Layer"]
+        PG[("Postgres<br/><i>Drizzle ORM</i>")]
+        REDIS[("Redis<br/><i>Cache + Queue</i>")]
+        MINIO[("MinIO<br/><i>S3 Artifacts</i>")]
+    end
+
+    subgraph Ext["External Services"]
+        SEARXNG["SearXNG<br/><i>Meta Search</i>"]
+        LLM["LLM Providers<br/><i>OpenAI / Anthropic / Gemini<br/>OpenRouter / Ollama</i>"]
+        WEB[("Web<br/><i>Target Sites</i>")]
+    end
+
+    CLI --> API
+    SDK --> API
+    MCP --> API
+    DASH --> API
+
+    API --> MID
+    MID --> QSEARCH
+    MID --> QFETCH
+    MID --> QBROWSER
+    MID --> QAGENT
+
+    QSEARCH --> WSEARCH
+    QFETCH --> WFETCH
+    QBROWSER --> WBROWSER
+    QAGENT --> WAGENT
+
+    WSEARCH --> SEARXNG
+    WFETCH --> WEB
+    WBROWSER --> WEB
+    WAGENT --> WEB
+    WAGENT --> LLM
+
+    WSEARCH --> REDIS
+    WFETCH --> REDIS
+    WBROWSER --> MINIO
+    WAGENT --> PG
+
+    PG --> REDIS
+    SEARXNG --> REDIS
+
+    style API fill:#0D7377,color:#fff
+    style MID fill:#0D9488,color:#fff
+    style WAGENT fill:#2563EB,color:#fff
+    style WBROWSER fill:#2563EB,color:#fff

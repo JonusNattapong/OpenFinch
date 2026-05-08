@@ -1,0 +1,19 @@
+graph LR
+    subgraph Capability["Capability Escalation Model"]
+        SEARCH["Search<br/><i>Lightest</i>"]
+        FETCH["Fetch"]
+        EXTRACT["Extract"]
+        AGENT["Agent"]
+        BROWSE["Browser<br/><i>Heaviest</i>"]
+    end
+
+    SEARCH -->|"No results found"| FETCH
+    FETCH -->|"Need structured data"| EXTRACT
+    EXTRACT -->|"Need interaction"| AGENT
+    AGENT -->|"Need visual rendering"| BROWSE
+
+    style SEARCH fill:#059669,color:#fff
+    style FETCH fill:#0D7377,color:#fff
+    style EXTRACT fill:#2563EB,color:#fff
+    style AGENT fill:#7C3AED,color:#fff
+    style BROWSE fill:#DC2626,color:#fff

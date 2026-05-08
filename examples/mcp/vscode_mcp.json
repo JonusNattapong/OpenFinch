@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "openfinch": {
+      "command": "npx",
+      "args": ["-y", "openfinch-mcp"],
+      "env": {
+        "OPENFINCH_API_URL": "http://localhost:8787"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker info:*)",
+      "Bash(pnpm -F @openfinch/schemas build)",
+      "Bash(pnpm -F @openfinch/shared build)",
+      "Bash(pnpm -F @openfinch/api build)",
+      "Bash(pnpm -F openfinch build)",
+      "Bash(pnpm -F openfinch-mcp build)",
+      "Bash(pnpm -r build)",
+      "Bash(pnpm:*)",
+      "Bash(docker compose:*)"
+    ]
+  }
+}
