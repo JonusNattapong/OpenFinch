@@ -1,0 +1,12 @@
+{
+  "name": "openfinch-demo-site",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local demo website for testing OpenFinch fetch, extract, browser, and agent capabilities",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "license": "MIT"
+}

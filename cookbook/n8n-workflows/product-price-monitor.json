@@ -1,0 +1,87 @@
+{
+  "name": "OpenFinch Product Price Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [ { "field": "hours", "hoursInterval": 24 } ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule (Every 24h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/fetch",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url || 'http://localhost:4173/products' }}" },
+            { "name": "format", "value": "markdown" }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch",
+      "name": "OpenFinch Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/extract",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url || 'http://localhost:4173/products' }}" },
+            { "name": "prompt", "value": "Extract all product names, prices, and stock status. Return as JSON array." },
+            { "name": "provider", "value": "ollama" }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "extract",
+      "name": "OpenFinch Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8787/health",
+        "authentication": "none"
+      },
+      "id": "health",
+      "name": "OpenFinch Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [350, 500],
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Schedule (Every 24h)": { "main": [[ { "node": "OpenFinch Fetch", "type": "main", "index": 0 } ]] },
+    "OpenFinch Fetch": { "main": [[ { "node": "OpenFinch Extract", "type": "main", "index": 0 } ]] },
+    "OpenFinch Extract": { "main": [] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "v0.1.0-demo"
+}

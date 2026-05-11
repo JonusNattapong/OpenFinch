@@ -1,0 +1,102 @@
+{
+  "name": "OpenFinch Daily Website Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [ { "field": "hours", "hoursInterval": 12 } ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule (Every 12h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "urls": "https://example.com\nhttps://example.org",
+        "options": {}
+      },
+      "id": "split",
+      "name": "Split URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "parameters": {
+        "language": "javaScript",
+        "code": "const urls = $input.first().json.urls || 'https://example.com';\nreturn urls.split('\\n').filter(u => u.trim()).map(url => ({ url: url.trim() }));"
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/fetch",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "format", "value": "markdown" }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "fetch",
+      "name": "OpenFinch Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/extract",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.url }}" },
+            { "name": "prompt", "value": "Summarize this page in 2-3 sentences. Extract the main topic, key points, and any important data." },
+            { "name": "provider", "value": "ollama" }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "extract",
+      "name": "OpenFinch Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "subject": "Daily Website Summary",
+        "text": "={{ JSON.stringify($json, null, 2) }}"
+      },
+      "id": "output",
+      "name": "Summary Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Schedule (Every 12h)": { "main": [[ { "node": "Split URLs", "type": "main", "index": 0 } ]] },
+    "Split URLs": { "main": [[ { "node": "OpenFinch Fetch", "type": "main", "index": 0 } ]] },
+    "OpenFinch Fetch": { "main": [[ { "node": "OpenFinch Extract", "type": "main", "index": 0 } ]] },
+    "OpenFinch Extract": { "main": [[ { "node": "Summary Output", "type": "main", "index": 0 } ]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "v0.1.0-demo"
+}

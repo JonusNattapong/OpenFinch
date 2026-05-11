@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documentation — OpenFinch Demo Store</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #333; }
+  h1, h2, h3 { color: #1e293b; }
+  code { background: #f1f5f9; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  nav { background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  nav a { margin-right: 1.5rem; color: #2563eb; text-decoration: none; font-weight: 500; }
+  .info-box { background: #eff6ff; border-left: 4px solid #2563eb; padding: 1rem; margin: 1rem 0; border-radius: 0 8px 8px 0; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; color: #64748b; }
+</style>
+</head>
+<body>
+  <h1>Documentation</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/products">Products</a>
+    <a href="/docs">Documentation</a>
+    <a href="/form">Contact Form</a>
+    <a href="/js-rendered">JS Rendered</a>
+  </nav>
+
+  <h2>Getting Started</h2>
+  <p>Welcome to the OpenFinch Demo Store documentation. This page contains structured documentation content for testing OpenFinch's fetch and extract capabilities.</p>
+
+  <h2>API Reference</h2>
+  <p>The demo site provides the following API endpoints:</p>
+  <ul>
+    <li><code>GET /health</code> — Health check endpoint, returns JSON with status</li>
+    <li><code>GET /api/products</code> — Returns all products as JSON array</li>
+  </ul>
+
+  <h2>Product Schema</h2>
+  <p>Each product in the catalog has the following fields:</p>
+  <ul>
+    <li><strong>id</strong> (number) — Unique product identifier</li>
+    <li><strong>name</strong> (string) — Product name</li>
+    <li><strong>price</strong> (number) — Price in USD</li>
+    <li><strong>category</strong> (string) — Product category (laptops, tablets, headphones, monitors, accessories)</li>
+    <li><strong>rating</strong> (number) — Average rating from 1.0 to 5.0</li>
+    <li><strong>inStock</strong> (boolean) — Whether the product is currently in stock</li>
+  </ul>
+
+  <div class="info-box">
+    <strong>Tip:</strong> Use the <code>/api/products</code> endpoint for structured product data extraction testing.
+  </div>
+
+  <h2>Integration Guide</h2>
+  <h3>Fetching Product Data</h3>
+  <pre>curl -X POST http://localhost:8787/v1/fetch \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "http://localhost:4173/products", "format": "markdown"}'</pre>
+
+  <h3>Extracting Product Information</h3>
+  <pre>curl -X POST http://localhost:8787/v1/extract \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "http://localhost:4173/products",
+    "prompt": "Extract all product names, prices, and ratings"
+  }'</pre>
+
+  <h3>Browser Screenshot</h3>
+  <pre>curl -X POST http://localhost:8787/v1/browser/session \
+  -H 'Content-Type: application/json' \
+  -d '{"headless": true}'</pre>
+</body>
+</html>

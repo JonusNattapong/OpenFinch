@@ -240,6 +240,32 @@ pip install openfinch && python -c "from openfinch import OpenFinch; print('PyPI
 - [ ] Fix critical bugs from feedback
 - [ ] Plan next release
 
+## Release Validation
+
+### Local Smoke Tests (no Docker)
+- [ ] `pnpm smoke:local` — all local structure and module checks pass
+- [ ] `pnpm verify:cookbook` — all 8+ recipes have required files
+
+### Docker Smoke Tests
+- [ ] `docker compose up -d` — all services start
+- [ ] `pnpm smoke:docker` — health, search, fetch, extract, browser, agent, CLI, MCP pass
+- [ ] `pnpm bench` — benchmark runs without errors
+
+### Dashboard
+- [ ] `pnpm smoke:dashboard` — Playwright dashboard tests pass (or manual check)
+- [ ] Dashboard loads at http://localhost:3000
+- [ ] Health status shows green
+- [ ] Provider configuration visible
+
+### n8n Integration
+- [ ] Import one n8n workflow from `cookbook/n8n-workflows/`
+- [ ] Workflow connects to local OpenFinch API
+
+### Cross-Platform
+- [ ] Test on Windows (see `docs/windows-validation.md`)
+- [ ] Test on WSL2 if available
+- [ ] Test MCP in one real client (Claude Desktop, Cursor, or VS Code)
+
 ## Health Check Script
 
 ```bash

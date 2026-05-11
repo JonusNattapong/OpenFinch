@@ -9,7 +9,12 @@
       "Bash(pnpm -F openfinch-mcp build)",
       "Bash(pnpm -r build)",
       "Bash(pnpm:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(docker images:*)",
+      "Bash(findstr openfinch:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker run:*)",
+      "Bash(curl:*)"
     ]
   }
 }

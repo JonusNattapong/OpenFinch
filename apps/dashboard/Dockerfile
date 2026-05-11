@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 RUN corepack enable && corepack prepare pnpm@10 --activate
 WORKDIR /app
 
-COPY pnpm-workspace.yaml package.json tsconfig.base.json ./
+COPY pnpm-workspace.yaml package.json tsconfig.base.json pnpm-lock.yaml ./
 COPY apps/dashboard apps/dashboard
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \

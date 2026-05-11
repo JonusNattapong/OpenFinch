@@ -210,7 +210,7 @@ services:
     logging: *default-logging
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/"]
       interval: 10s
       timeout: 5s
       retries: 3

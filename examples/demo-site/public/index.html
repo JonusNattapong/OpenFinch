@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenFinch Demo Store</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #333; }
+  h1 { color: #2563eb; }
+  nav { background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  nav a { margin-right: 1.5rem; color: #2563eb; text-decoration: none; font-weight: 500; }
+  nav a:hover { text-decoration: underline; }
+  .hero { background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; padding: 3rem 2rem; border-radius: 12px; margin: 2rem 0; text-align: center; }
+  .hero h2 { font-size: 2rem; margin: 0 0 0.5rem; }
+  .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+  .card h3 { margin-top: 0; color: #1e293b; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #64748b; }
+</style>
+</head>
+<body>
+  <h1>OpenFinch Demo Store</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/products">Products</a>
+    <a href="/docs">Documentation</a>
+    <a href="/form">Contact Form</a>
+    <a href="/js-rendered">JS Rendered</a>
+  </nav>
+
+  <div class="hero">
+    <h2>Welcome to the Demo Store</h2>
+    <p>A safe local testing site for OpenFinch web agent capabilities</p>
+  </div>
+
+  <div class="card">
+    <h3>About This Site</h3>
+    <p>This is a local demo website for testing OpenFinch features without depending on external websites. It includes:</p>
+    <ul>
+      <li><strong>Product pages</strong> — Structured product data for extraction testing</li>
+      <li><strong>Documentation</strong> — Article-style content for fetch testing</li>
+      <li><strong>Contact form</strong> — A simple form for agent interaction testing</li>
+      <li><strong>JS-rendered content</strong> — Content loaded via JavaScript</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Featured Products</h3>
+    <ul>
+      <li><a href="/product/laptop">QuantumBook Pro</a> — $1,299</li>
+      <li><a href="/product/tablet">NovaTab S9</a> — $799</li>
+      <li><a href="/product/headphones">AuraBuds X2</a> — $249</li>
+    </ul>
+    <p><a href="/products">View all products →</a></p>
+  </div>
+
+  <footer>
+    <p>OpenFinch Demo Site v0.1.0 — For testing purposes only</p>
+  </footer>
+</body>
+</html>

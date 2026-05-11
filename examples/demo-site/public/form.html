@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Form — OpenFinch Demo Store</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #333; }
+  h1 { color: #2563eb; }
+  nav { background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  nav a { margin-right: 1.5rem; color: #2563eb; text-decoration: none; font-weight: 500; }
+  label { display: block; margin-top: 1rem; font-weight: 500; }
+  input, textarea { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem; margin-top: 0.25rem; box-sizing: border-box; }
+  textarea { height: 120px; }
+  button { background: #2563eb; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
+  .success { display: none; background: #d1fae5; border: 1px solid #059669; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; color: #64748b; }
+</style>
+</head>
+<body>
+  <h1>Contact Us</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/products">Products</a>
+    <a href="/docs">Documentation</a>
+    <a href="/form">Contact Form</a>
+    <a href="/js-rendered">JS Rendered</a>
+  </nav>
+
+  <p>Have a question? Fill out the form below and we'll get back to you.</p>
+
+  <form id="contactForm" method="POST" action="/form">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required placeholder="Your name">
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required placeholder="your@email.com">
+
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" name="subject" required placeholder="How can we help?">
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" required placeholder="Your message details..."></textarea>
+
+    <button type="submit">Send Message</button>
+  </form>
+
+  <div id="successMessage" class="success">
+    Thank you for your message! We'll respond within 24 hours.
+  </div>
+
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'block';
+    });
+  </script>
+
+  <footer>
+    <p>OpenFinch Demo Site v0.1.0 — For testing purposes only</p>
+  </footer>
+</body>
+</html>

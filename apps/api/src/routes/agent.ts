@@ -1,90 +1,21 @@
 import { Hono } from "hono";
-import { z } from "zod";
 import { agentQueue } from "../lib/queue.js";
 import { getProvider, getAvailableProviders } from "../lib/llm/registry.js";
-import { cacheGet, cacheSet } from "../lib/cache.js";
-
-// In-memory store for runs (also persisted to Postgres in production)
-interface AgentRun {
-  runId: string;
-  status: "queued" | "running" | "succeeded" | "failed" | "cancelled" | "timeout";
-  goal: string;
-  url: string | null;
-  provider: string;
-  model: string | null;
-  createdAt: string;
-  startedAt: string | null;
-  completedAt: string | null;
-  currentStep: number;
-  totalSteps: number;
-  result: unknown;
-  error: string | null;
-}
-
-interface AgentEvent {
-  runId: string;
-  type: "run_created" | "browser_started" | "page_loaded" | "llm_planned" | "action_started" | "action_completed" | "extraction_completed" | "run_succeeded" | "run_failed";
-  step: number;
-  content: unknown;
-  timestamp: string;
-}
-
-const runs = new Map<string, AgentRun>();
-const events = new Map<string, AgentEvent[]>();
-
-const MAX_RUNS = 50;
-
-const AgentRunBody = z.object({
-  url: z.string().url().optional(),
-  goal: z.string().min(1).max(5000),
-  outputSchema: z.record(z.any()).optional(),
-  provider: z.string().optional(),
-  model: z.string().optional(),
-  maxSteps: z.number().int().min(1).max(50).default(10),
-  maxRuntimeSeconds: z.number().int().min(30).max(600).default(180),
-  renderJs: z.boolean().default(true),
-});
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
-
-function addEvent(runId: string, type: AgentEvent["type"], step: number, content: unknown) {
-  if (!events.has(runId)) events.set(runId, []);
-  events.get(runId)!.push({
-    runId, type, step,
-    content,
-    timestamp: new Date().toISOString(),
-  });
-}
-
-// Cleanup old runs
-setInterval(() => {
-  const now = Date.now();
-  for (const [id, run] of runs) {
-    if (run.status === "succeeded" || run.status === "failed" || run.status === "cancelled") {
-      const age = now - new Date(run.createdAt).getTime();
-      if (age > 3600_000) runs.delete(id); // remove after 1 hour
-    }
-  }
-}, 60_000);
+import { createRun, getRun, listEvents, updateRunStatus } from "../db/agent-repo.js";
+import { AgentRunRequest } from "@openfinch/schemas";
 
 export const agentRoute = new Hono();
 
 // Create agent run
 agentRoute.post("/v1/agent/run", async (c) => {
-  const body = AgentRunBody.safeParse(await c.req.json());
-  if (!body.success) return c.json({ error: body.error.flatten() }, 400);
-
-  // Limit concurrent runs
-  const activeCount = [...runs.values()].filter((r) => r.status === "queued" || r.status === "running").length;
-  if (activeCount >= 5) {
-    return c.json({ error: "Max concurrent runs (5) reached. Wait for a running job to complete." }, 429);
+  const bodyParse = AgentRunRequest.safeParse(await c.req.json());
+  if (!bodyParse.success) {
+    return c.json({ error: bodyParse.error.flatten() }, 400);
   }
 
-  const { url, goal, outputSchema, provider, model, maxSteps, maxRuntimeSeconds, renderJs } = body.data;
+  const { goal, startUrl, maxSteps, provider, model, headless, renderJs, timeoutMs, allowedDomains } = bodyParse.data;
 
-  // Check provider availability early
+  // Check provider availability
   try {
     getProvider(provider);
   } catch (err) {
@@ -95,119 +26,122 @@ agentRoute.post("/v1/agent/run", async (c) => {
     }, 400);
   }
 
-  const runId = generateId();
-  const now = new Date().toISOString();
-
-  const run: AgentRun = {
-    runId,
-    status: "queued",
+  // Create run in DB
+  const runId = await createRun({
     goal,
-    url: url ?? null,
-    provider: provider ?? "openai",
-    model: model ?? null,
-    createdAt: now,
-    startedAt: null,
-    completedAt: null,
-    currentStep: 0,
-    totalSteps: 0,
-    result: null,
-    error: null,
-  };
-
-  runs.set(runId, run);
-  addEvent(runId, "run_created", 0, { goal, url });
+    startUrl,
+    provider,
+    model,
+    maxSteps,
+    allowedDomains,
+  });
 
   // Enqueue to agent worker
   await agentQueue.add("agent-run", {
     runId,
-    url,
+    startUrl: startUrl ?? null,
     goal,
-    outputSchema,
+    maxSteps,
+    timeoutMs,
     provider: provider ?? "openai",
     model,
-    maxSteps,
-    maxRuntimeSeconds,
+    headless,
     renderJs,
+    allowedDomains: allowedDomains ?? null,
   });
 
   return c.json({
     runId,
     status: "queued",
-    createdAt: now,
+    createdAt: new Date().toISOString(),
   });
 });
 
 // Get run status
 agentRoute.get("/v1/agent/run/:id", async (c) => {
   const runId = c.req.param("id");
-  const run = runs.get(runId);
+  const run = await getRun(runId);
   if (!run) return c.json({ error: "Run not found" }, 404);
 
   return c.json({
-    runId: run.runId,
+    id: run.id,
+    goal: run.goal,
     status: run.status,
-    createdAt: run.createdAt,
-    startedAt: run.startedAt,
-    completedAt: run.completedAt,
     currentStep: run.currentStep,
-    totalSteps: run.totalSteps,
-    error: run.error,
-  });
-});
-
-// Get run result
-agentRoute.get("/v1/agent/run/:id/result", async (c) => {
-  const runId = c.req.param("id");
-  const run = runs.get(runId);
-  if (!run) return c.json({ error: "Run not found" }, 404);
-
-  if (run.status !== "succeeded" && run.status !== "failed") {
-    return c.json({ error: `Run is still ${run.status}. Poll /v1/agent/run/${runId} for status.` }, 400);
-  }
-
-  return c.json({
-    runId: run.runId,
-    status: run.status,
+    maxSteps: run.maxSteps,
     result: run.result,
     error: run.error,
-    currentStep: run.currentStep,
-    totalSteps: run.totalSteps,
+    createdAt: run.createdAt.toISOString(),
+    startedAt: run.startedAt?.toISOString() ?? null,
+    completedAt: run.completedAt?.toISOString() ?? null,
   });
 });
 
-// Get run events (SSE stream)
+// Get run events
 agentRoute.get("/v1/agent/run/:id/events", async (c) => {
   const runId = c.req.param("id");
-  const run = runs.get(runId);
+  const run = await getRun(runId);
   if (!run) return c.json({ error: "Run not found" }, 404);
 
-  const runEvents = events.get(runId) ?? [];
-
-  // Support both SSE and JSON responses
   const accept = c.req.header("accept") ?? "";
+
   if (accept.includes("text/event-stream")) {
     c.header("Content-Type", "text/event-stream");
     c.header("Cache-Control", "no-cache");
     c.header("Connection", "keep-alive");
 
-    // Return existing events as SSE
+    const existing = await listEvents(runId);
     let sse = "";
-    for (const evt of runEvents) {
-      sse += `data: ${JSON.stringify(evt)}\n\n`;
+    for (const evt of existing) {
+      sse += `data: ${JSON.stringify({
+        id: evt.id,
+        runId: evt.runId,
+        step: evt.step,
+        type: evt.type,
+        data: evt.data,
+        createdAt: evt.createdAt.toISOString(),
+      })}\n\n`;
     }
-
-    // If run is still active, set up polling
-    if (run.status === "queued" || run.status === "running") {
-      // The client will poll for updates
-    }
-
     return c.body(sse);
   }
 
-  return c.json(runEvents);
+  const events = await listEvents(runId);
+  return c.json({
+    runId,
+    events: events.map((e) => ({
+      id: e.id,
+      runId: e.runId,
+      step: e.step,
+      type: e.type,
+      data: e.data,
+      createdAt: e.createdAt.toISOString(),
+    })),
+  });
 });
 
-// Get available providers (helper endpoint)
+// Cancel a run
+agentRoute.post("/v1/agent/run/:id/cancel", async (c) => {
+  const runId = c.req.param("id");
+  const run = await getRun(runId);
+
+  if (!run) {
+    return c.json({ runId, status: "not_found" }, 404);
+  }
+
+  const terminal = ["completed", "failed", "cancelled", "timed_out"];
+  if (terminal.includes(run.status)) {
+    return c.json({ runId, status: "already_terminal" }, 400);
+  }
+
+  await updateRunStatus(runId, "cancelled", {
+    completedAt: new Date(),
+    error: "Cancelled by user",
+  });
+
+  return c.json({ runId, status: "cancelled" });
+});
+
+// Get available providers
 agentRoute.get("/v1/agent/providers", async (c) => {
   return c.json({ providers: getAvailableProviders() });
 });

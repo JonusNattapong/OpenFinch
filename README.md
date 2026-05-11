@@ -73,28 +73,44 @@ curl http://localhost:8787/health
 git clone https://github.com/openfinch/openfinch.git
 cd openfinch
 cp .env.example .env
-# Edit .env and set at least one LLM key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)
+# Edit .env — set at least one LLM key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)
 ```
 
-### 2. Start everything
+### 2. Apply database migrations
+
+```bash
+cd apps/api
+pnpm drizzle-kit migrate
+cd ../..
+```
+
+### 3. Start everything
 
 ```bash
 docker compose up -d
 ```
 
-### 3. Verify it's running
+### 4. Verify it's running
 
 ```bash
 curl http://localhost:8787/health
 # {"status":"ok","version":"0.1.0","uptime":42,...}
 ```
 
-### 4. Run your first search
+### 5. Run your first search
 
 ```bash
 curl -X POST http://localhost:8787/v1/search \
   -H 'Content-Type: application/json' \
   -d '{"query": "latest AI news", "limit": 5}'
+```
+
+### 6. Run your first agent
+
+```bash
+curl -X POST http://localhost:8787/v1/agent/run \
+  -H 'Content-Type: application/json' \
+  -d '{"goal": "Go to example.com and extract the main heading", "startUrl": "https://example.com", "maxSteps": 5}'
 ```
 
 Done. Your self-hosted AI web agent infrastructure is running.
@@ -170,11 +186,34 @@ Headless Chromium sessions via Playwright. Create sessions, take screenshots, an
 ```
 
 ### Agent
-Autonomous web agents that combine search, browse, and extraction with LLM reasoning. Event tracing for full transparency.
+Autonomous web agents that use a real observe → decide → act loop with LLM reasoning. Every step is stored as an event. Screenshots and extractions are stored as artifacts.
+
+**How it works:**
+1. `POST /v1/agent/run` — creates a run record in Postgres, queues job in BullMQ
+2. `agent-worker` picks up the job, creates a Playwright browser session
+3. Loop: observe page → ask LLM for next action → validate → execute → store event
+4. Stops on `finish`, `fail`, max steps, timeout, or cancellation
+5. Final status and result are persisted to Postgres
 
 ```bash
-@openfinch/cli agent run "Find pricing for product X on example.com"
+# Create a run
+curl -X POST http://localhost:8787/v1/agent/run \
+  -H 'Content-Type: application/json' \
+  -d '{"goal": "Summarize pricing on example.com", "startUrl": "https://example.com", "maxSteps": 10}'
+
+# Check status
+curl http://localhost:8787/v1/agent/run/run_xxx
+
+# Get event timeline
+curl http://localhost:8787/v1/agent/run/run_xxx/events
+
+# Cancel a run
+curl -X POST http://localhost:8787/v1/agent/run/run_xxx/cancel
 ```
+
+**Supported actions:** `goto`, `click`, `type`, `scroll`, `wait`, `screenshot`, `extract`, `finish`, `fail`
+**Run statuses:** `queued`, `running`, `completed`, `failed`, `cancelled`, `timed_out`
+**Providers:** OpenAI, Anthropic, Gemini, OpenRouter, Ollama
 
 ---
 
@@ -378,7 +417,7 @@ openfinch/
 - [x] REST API with health, search, fetch, extract, browser, agent endpoints
 - [x] LLM providers: OpenAI, Anthropic, Gemini, OpenRouter, Ollama
 - [x] Browser automation (Playwright sessions, screenshots)
-- [x] Autonomous agent with tool use and event tracing
+- [x] Autonomous agent with real observe → decide → act loop (Postgres-backed)
 - [x] MCP server for Claude Desktop
 - [x] JS and Python SDKs
 - [x] CLI tool
@@ -403,15 +442,61 @@ pnpm install
 # Build all packages
 pnpm build
 
+# Generate & apply DB migrations (required before first run)
+cd apps/api
+pnpm drizzle-kit generate
+pnpm drizzle-kit migrate
+cd ../..
+
 # Run API in dev mode
 pnpm dev
 
 # Run tests
 pnpm test
 
+# Run E2E smoke tests (requires Docker Compose)
+pnpm smoke:docker
+
+# Quick validation (no Docker required)
+pnpm smoke:local
+
+# Start local demo site for testing
+pnpm demo:site
+
+# Verify cookbook recipes
+pnpm verify:cookbook
+
+# Performance benchmark
+pnpm bench
+
 # Type check
 pnpm typecheck
 ```
+
+## Validation
+
+Quick validation flow to verify OpenFinch works correctly:
+
+```bash
+# 1. Local checks (no Docker required)
+pnpm smoke:local
+pnpm verify:cookbook
+
+# 2. Full stack with Docker
+docker compose up -d
+pnpm smoke:docker
+
+# 3. Performance
+pnpm bench
+
+# 4. Dashboard (requires Playwright)
+pnpm smoke:dashboard
+
+# 5. Cleanup
+pnpm docker:down
+```
+
+See [docs/smoke-tests.md](docs/smoke-tests.md) for details on all test modes.
 
 ---
 

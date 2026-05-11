@@ -1,0 +1,83 @@
+{
+  "name": "OpenFinch Web Research Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/search",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "query", "value": "={{ $json.query || 'open source AI web agents' }}" },
+            { "name": "limit", "value": 5 }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "search",
+      "name": "OpenFinch Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8787/v1/extract",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "url", "value": "={{ $json.results[0].url }}" },
+            { "name": "prompt", "value": "={{ $json.extractPrompt || 'Extract key information from this page' }}" },
+            { "name": "provider", "value": "ollama" }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "extract",
+      "name": "OpenFinch Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.email || '' }}",
+        "subject": "Research Results: {{ $json.query }}",
+        "text": "={{ JSON.stringify($json, null, 2) }}"
+      },
+      "id": "output",
+      "name": "Output (Email or Webhook)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[ { "node": "OpenFinch Search", "type": "main", "index": 0 } ]] },
+    "OpenFinch Search": { "main": [[ { "node": "OpenFinch Extract", "type": "main", "index": 0 } ]] },
+    "OpenFinch Extract": { "main": [[ { "node": "Output (Email or Webhook)", "type": "main", "index": 0 } ]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "v0.1.0-demo"
+}

@@ -10,6 +10,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@hono/node-server": "^1.13.0",
     "hono": "^4.7.0"
   },
   "devDependencies": {

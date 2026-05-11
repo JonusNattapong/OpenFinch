@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@hono/node-server": "^1.13.0",
     "@hono/zod-openapi": "^0.18.0",
     "@openfinch/schemas": "workspace:*",
     "@openfinch/shared": "workspace:*",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.0",
     "vitest": "^3.0.0"
   }

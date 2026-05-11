@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS-Rendered Content — OpenFinch Demo Store</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 700px; margin: 0 auto; padding: 2rem; line-height: 1.6; color: #333; }
+  h1 { color: #2563eb; }
+  nav { background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  nav a { margin-right: 1.5rem; color: #2563eb; text-decoration: none; font-weight: 500; }
+  .static-content { background: #f0fdf4; border: 1px solid #86efac; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+  .js-content { background: #fef3c7; border: 1px solid #fbbf24; padding: 1rem; border-radius: 8px; margin: 1rem 0; min-height: 80px; }
+  .js-content.loaded { background: #dbeafe; border-color: #60a5fa; }
+  footer { margin-top: 3rem; border-top: 1px solid #e2e8f0; color: #64748b; }
+  #loading { color: #92400e; }
+  #loaded-content { display: none; }
+  .js-content.loaded #loading { display: none; }
+  .js-content.loaded #loaded-content { display: block; }
+</style>
+</head>
+<body>
+  <h1>JavaScript-Rendered Content</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/products">Products</a>
+    <a href="/docs">Documentation</a>
+    <a href="/form">Contact Form</a>
+    <a href="/js-rendered">JS Rendered</a>
+  </nav>
+
+  <div class="static-content">
+    <h2>Static Content (Always Visible)</h2>
+    <p>This content is part of the initial HTML and is always visible, even without JavaScript.</p>
+    <p>Use this section to verify that basic fetch works correctly.</p>
+  </div>
+
+  <div class="js-content" id="jsContent">
+    <p id="loading">⏳ Loading dynamic content with JavaScript...</p>
+    <div id="loaded-content">
+      <h2>Dynamic Content (JS-Rendered)</h2>
+      <p>This content was rendered by JavaScript. It only appears when the browser executes JS.</p>
+      <p>This tests OpenFinch's <code>renderJs: true</code> fetch option.</p>
+      <h3>Latest Products (loaded via API)</h3>
+      <ul id="productList">
+        <li>QuantumBook Pro — $1,299</li>
+        <li>NovaTab S9 — $799</li>
+        <li>AuraBuds X2 — $249</li>
+      </ul>
+      <p>Timestamp: <span id="timestamp"></span></p>
+    </div>
+  </div>
+
+  <script>
+    // Simulate JS rendering delay
+    setTimeout(() => {
+      document.getElementById('jsContent').classList.add('loaded');
+      document.getElementById('timestamp').textContent = new Date().toISOString();
+
+      // Try to fetch dynamic product data
+      fetch('/api/products')
+        .then(r => r.json())
+        .then(data => {
+          const list = document.getElementById('productList');
+          if (data.products) {
+            list.innerHTML = data.products.map(p =>
+              `<li>${p.name} — $${p.price} (rating: ${p.rating})</li>`
+            ).join('');
+          }
+        })
+        .catch(() => {});
+    }, 500);
+  </script>
+
+  <footer>
+    <p>OpenFinch Demo Site v0.1.0 — For testing purposes only</p>
+  </footer>
+</body>
+</html>
