@@ -37,12 +37,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openfinch/openfinch.git"
+    "url": "git+https://github.com/JonusNattapong/openfinch.git"
   },
   "bugs": {
-    "url": "https://github.com/openfinch/openfinch/issues"
+    "url": "https://github.com/JonusNattapong/openfinch/issues"
   },
-  "homepage": "https://github.com/openfinch/openfinch#readme",
+  "homepage": "https://github.com/JonusNattapong/openfinch#readme",
   "engines": {
     "node": ">=22.12.0"
   }

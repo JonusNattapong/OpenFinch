@@ -25,7 +25,7 @@ Search, fetch, extract, browse, and run AI web agents from your own machine. Bri
 ### Quick Start (Docker Compose)
 
 ```bash
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 cp .env.example .env
 # Edit .env and set at least one LLM API key

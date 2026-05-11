@@ -8,7 +8,7 @@
 Search, fetch, extract, browse, and run AI web agents from your own machine.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/openfinch/openfinch/actions/workflows/ci.yml/badge.svg)](https://github.com/openfinch/openfinch/actions/workflows/ci.yml)
+[![CI](https://github.com/JonusNattapong/openfinch/actions/workflows/ci.yml/badge.svg)](https://github.com/JonusNattapong/openfinch/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/openfinch)](https://www.npmjs.com/package/openfinch)
 [![npm downloads](https://img.shields.io/npm/dm/openfinch)](https://www.npmjs.com/package/openfinch)
 [![Python](https://img.shields.io/pypi/v/openfinch)](https://pypi.org/project/openfinch/)
@@ -74,7 +74,7 @@ curl http://localhost:8787/health
 ### 1. Clone and configure
 
 ```bash
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 cp .env.example .env
 # Edit .env — set at least one LLM key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.)

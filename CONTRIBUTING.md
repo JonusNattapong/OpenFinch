@@ -33,7 +33,7 @@ Thank you for your interest in contributing! OpenFinch is an open-source, self-h
 
 ```bash
 # Clone
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 
 # Install

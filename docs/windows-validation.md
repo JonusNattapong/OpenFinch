@@ -70,7 +70,7 @@ DASHBOARD_PORT=3001
 
 ```powershell
 # Clone
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 
 # Copy env
@@ -101,7 +101,7 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
   -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
 
 # Or clone to a short path:
-git clone https://github.com/openfinch/openfinch.git C:\of
+git clone https://github.com/JonusNattapong/openfinch.git C:\of
 ```
 
 ### Build Tools
@@ -189,12 +189,12 @@ Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
   -Name "LongPathsEnabled"
 
 # Workaround: use a short clone path
-git clone https://github.com/openfinch/openfinch.git C:\of
+git clone https://github.com/JonusNattapong/openfinch.git C:\of
 
 # Workaround: use WSL2
 wsl
 cd ~
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 pnpm install
 ```

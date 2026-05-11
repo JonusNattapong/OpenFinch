@@ -16,7 +16,7 @@
 |                                                                  |
 |   Bring your own model. Own your data. No platform fee.          |
 |                                                                  |
-|   [github.com/openfinch/openfinch]                               |
+|   [github.com/JonusNattapong/openfinch]                               |
 +------------------------------------------------------------------+
 ```
 
@@ -29,7 +29,7 @@
 - Capability row: 5 pill-shaped badges — Search, Fetch, Extract, Browse, Agent — teal fill, white text
 - Platform row: 4 smaller badges — CLI, SDK, MCP, Dashboard — slate fill, white text
 - Bottom tagline: "Bring your own model. Own your data. No platform fee." — teal (#0D7377), ~20px
-- URL: "github.com/openfinch/openfinch" — white, ~16px, bottom right
+- URL: "github.com/JonusNattapong/openfinch" — white, ~16px, bottom right
 
 ## AI Image Generation Prompt
 

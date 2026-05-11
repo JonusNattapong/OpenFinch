@@ -68,7 +68,7 @@ That's it. Your self-hosted AI web agent infrastructure is running.
 
 ## Links
 
-GitHub: https://github.com/openfinch/openfinch
+GitHub: https://github.com/JonusNattapong/openfinch
 Docs: ./docs/
 License: MIT
 ```
@@ -116,7 +116,7 @@ OpenFinch is not a stealth bot platform. It has no CAPTCHA bypass, no proxy rota
 **Getting started:**
 
 ```bash
-git clone https://github.com/openfinch/openfinch
+git clone https://github.com/JonusNattapong/openfinch
 cd openfinch
 cp .env.example .env
 # Set your LLM API key
@@ -140,7 +140,7 @@ Check the README for full documentation, API reference, and cookbook recipes.
 >
 > Bring your own model. Own your data. No platform fee.
 >
-> → github.com/openfinch/openfinch
+> → github.com/JonusNattapong/openfinch
 >
 > Docker Compose up and you're running.
 
@@ -152,7 +152,7 @@ Check the README for full documentation, API reference, and cookbook recipes.
 >
 > OpenFinch is open-source self-hosted AI web agents.
 >
-> → github.com/openfinch/openfinch
+> → github.com/JonusNattapong/openfinch
 
 ### Post 3 (Feature Focus)
 
@@ -162,7 +162,7 @@ Check the README for full documentation, API reference, and cookbook recipes.
 >
 > BYO model (OpenAI, Anthropic, Gemini, Ollama). No platform fee.
 >
-> → github.com/openfinch/openfinch
+> → github.com/JonusNattapong/openfinch
 
 ---
 
@@ -190,7 +190,7 @@ Why self-hosted? Zero platform fee, your data stays local, full control over con
 
 MIT licensed. Ready for self-hosting today.
 
-→ github.com/openfinch/openfinch
+→ github.com/JonusNattapong/openfinch
 
 ---
 
@@ -221,7 +221,7 @@ Hono API → BullMQ/Redis → Workers (search, fetch, browser, agent) → Postgr
 
 **Quick start:**
 ```bash
-git clone https://github.com/openfinch/openfinch
+git clone https://github.com/JonusNattapong/openfinch
 cd openfinch
 cp .env.example .env
 docker compose up -d
@@ -229,4 +229,4 @@ docker compose up -d
 
 MIT license. Would love feedback from the community.
 
-→ github.com/openfinch/openfinch
+→ github.com/JonusNattapong/openfinch

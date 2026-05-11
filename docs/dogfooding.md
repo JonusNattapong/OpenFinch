@@ -13,7 +13,7 @@ How to validate OpenFinch works end-to-end by running it locally (dogfooding).
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/openfinch/openfinch.git
+git clone https://github.com/JonusNattapong/openfinch.git
 cd openfinch
 pnpm install
 
