@@ -46,7 +46,7 @@ export class OpenFinch {
     };
     if (this.apiKey) headers["Authorization"] = `Bearer ${this.apiKey}`;
 
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const res = await globalThis.fetch(`${this.baseUrl}${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
