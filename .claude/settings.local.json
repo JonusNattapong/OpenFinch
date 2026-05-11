@@ -14,7 +14,8 @@
       "Bash(findstr openfinch:*)",
       "Bash(docker ps:*)",
       "Bash(docker run:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

@@ -1,5 +1,7 @@
-const API_URL = process.env.OPENFINCH_API_URL ?? "http://localhost:8787";
-const DASHBOARD_URL = process.env.OPENFINCH_DASHBOARD_URL ?? "http://localhost:3000";
+import { getEffectiveApiUrl, getEffectiveDashboardUrl } from "./config.js";
+
+const API_URL = getEffectiveApiUrl();
+const DASHBOARD_URL = getEffectiveDashboardUrl();
 
 interface CheckResult {
   name: string;

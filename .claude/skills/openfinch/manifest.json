@@ -1,0 +1,44 @@
+{
+  "name": "openfinch",
+  "version": "0.1.0",
+  "description": "Self-hosted AI web agent for search, fetch, extract, and browser automation",
+  "tools": [
+    "openfinch_search",
+    "openfinch_fetch",
+    "openfinch_extract",
+    "openfinch_browser_create_session",
+    "openfinch_browser_screenshot",
+    "openfinch_browser_close_session",
+    "openfinch_agent_run",
+    "openfinch_agent_get_result",
+    "openfinch_agent_get_events"
+  ],
+  "triggers": [
+    "research",
+    "search the web",
+    "find information",
+    "extract data from",
+    "scrape",
+    "take a screenshot",
+    "browse to",
+    "extract pricing",
+    "extract product",
+    "summarize the page",
+    "automate web",
+    "web agent"
+  ],
+  "setup": {
+    "mcp": {
+      "command": "npx",
+      "args": ["-y", "@openfinch/mcp-server"],
+      "env": {
+        "OPENFINCH_API_URL": "http://localhost:8787"
+      }
+    }
+  },
+  "safety": {
+    "blocksDestructiveActions": true,
+    "respectsRobotsTxt": true,
+    "requiresExplicitCredentials": true
+  }
+}

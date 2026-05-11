@@ -429,11 +429,11 @@ openfinch/
 - [x] Docker Compose deployment
 - [x] Cookbook with recipes and n8n templates
 - [x] Safety policy
-- [ ] CLI enhancements (config management, project templates)
-- [ ] Response caching via Postgres
-- [ ] Agent skill for Claude Code
+- [x] CLI enhancements (config management, project templates)
+- [x] Response caching via Postgres (three-tier: memory → Redis → Postgres)
+- [x] Agent skill for Claude Code
+- [x] One-line deploy script (bash + PowerShell)
 - [ ] Docs site
-- [ ] One-line deploy script
 
 ---
 
