@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/logo-github.png" alt="OpenFinch" width="200"/>
+</p>
+
 # OpenFinch
 
 **Open-source self-hosted AI web agent infrastructure.**
