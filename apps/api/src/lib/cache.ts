@@ -56,53 +56,45 @@ function memorySet(key: string, data: unknown, ttlSeconds: number): void {
 // --- Postgres helpers (L3 — durable fallback) ---
 let pgWarned = false;
 
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
-    ]);
-  } catch {
-    return null;
-  }
+// Fire-and-forget helper — never blocks the cache pipeline
+function pgIgnore(p: Promise<unknown>): void {
+  void p.catch(() => {/* non-fatal */});
 }
 
 async function pgGet<T>(key: string): Promise<T | null> {
-  const rows = await withTimeout(
+  const timeoutMs = 5000;
+  const rows = await Promise.race([
     db
       .select({ value: cacheEntries.value })
       .from(cacheEntries)
       .where(and(eq(cacheEntries.key, key), gt(cacheEntries.expiresAt, new Date())))
       .limit(1),
-    2000 // 2s timeout — fast-fail when DB is unavailable
-  );
-  if (rows === null) {
-    if (!pgWarned) {
-      pgWarned = true;
-      console.warn("[cache] Postgres query timed out — cache unavailable");
-    }
-    return null;
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+  ]);
+  if (rows === null && !pgWarned) {
+    pgWarned = true;
+    console.warn("[cache] Postgres query timed out — cache unavailable");
   }
-  return (rows[0]?.value as T) ?? null;
+  return (rows?.[0]?.value as T) ?? null;
 }
 
 async function pgSet(key: string, value: unknown, ttlSeconds: number): Promise<void> {
   const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
-  await withTimeout(
+  await Promise.race([
     db
       .insert(cacheEntries)
       .values({ key, value: value as Record<string, unknown>, ttl: ttlSeconds, expiresAt })
       .onConflictDoUpdate({ target: cacheEntries.key, set: { value: value as Record<string, unknown>, ttl: ttlSeconds, expiresAt } }),
-    2000
-  );
-  // non-fatal — best-effort only
+    new Promise<void>((resolve) => setTimeout(() => resolve(), 5000)),
+  ]);
 }
 
 async function pgDeleteExpired(): Promise<void> {
-  await withTimeout(
-    db.delete(cacheEntries).where(lt(cacheEntries.expiresAt, new Date())),
-    5000
-  );
+  try {
+    await db.delete(cacheEntries).where(lt(cacheEntries.expiresAt, new Date()));
+  } catch {
+    // non-fatal
+  }
 }
 
 // Kick off periodic cleanup every 10 minutes (best-effort)
@@ -167,5 +159,6 @@ export async function cacheSet(key: string, data: unknown, ttlSeconds: number = 
 
   const pgSetAsync = pgSet(fullKey, data, ttlSeconds);
 
-  await Promise.all([redisSet, pgSetAsync]);
+  await redisSet;
+  pgIgnore(pgSetAsync); // Postgres is non-blocking best-effort
 }

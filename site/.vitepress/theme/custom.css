@@ -1,0 +1,64 @@
+/* OpenFinch brand colors */
+:root {
+  --vp-c-brand-1: #14b8a6;   /* teal-500 */
+  --vp-c-brand-2: #0d9488;   /* teal-600 */
+  --vp-c-brand-3: #0f766e;   /* teal-700 */
+  --vp-c-brand-soft: rgba(20, 184, 166, 0.14);
+
+  /* Dark mode brand */
+  --vp-c-brand-1-dark: #2dd4bf;  /* teal-400 */
+  --vp-c-brand-2-dark: #14b8a6;  /* teal-500 */
+  --vp-c-brand-3-dark: #0d9488;  /* teal-600 */
+  --vp-c-brand-soft-dark: rgba(45, 212, 191, 0.14);
+
+  /* Spacing */
+  --vp-layout-max-width: 1440px;
+}
+
+/* Navbar logo */
+.VPNavBarTitle .title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Code blocks */
+.vp-code-block {
+  border-radius: 8px;
+}
+
+/* Custom container for tips */
+.vp-doc-details {
+  border-left: 3px solid var(--vp-c-brand-1);
+}
+
+/* Hero styling */
+.VPHero .tagline {
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* Feature cards */
+.vp-doc h2 {
+  margin-top: 2.5em;
+}
+
+/* Sidebar active item */
+.VPSidebarItem.is-active > .item > .text {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* Footer */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+/* Search */
+.VPNavBarSearch .DocSearch-Button {
+  border-radius: 6px;
+}
+
+/* Local search */
+.VPLocalSearchBox {
+  --vp-local-search-highlight-text-color: var(--vp-c-brand-1);
+}
