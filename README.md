@@ -433,7 +433,7 @@ openfinch/
 - [x] Response caching via Postgres (three-tier: memory → Redis → Postgres)
 - [x] Agent skill for Claude Code
 - [x] One-line deploy script (bash + PowerShell)
-- [ ] Docs site
+- [x] Docs site (VitePress at site/)
 
 ---
 
